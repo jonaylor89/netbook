@@ -26,14 +26,21 @@ impl VariableInterpolator {
             .parent()
             .unwrap_or_else(|| Path::new("."));
 
+        // Determine project root (one level up if collection is in .netbook/)
+        let project_root = if collection_dir.ends_with(".netbook") {
+            collection_dir.parent().unwrap_or(collection_dir)
+        } else {
+            collection_dir
+        };
+
         // Load from multiple locations in reverse priority order
         // (later files override earlier ones)
-        // Priority: .netbook/.env > .env.local > .env > .netbook.env
+        // Priority: .netbook/.env > project_root/.env.local > project_root/.env > .netbook.env
         let env_files = [
             collection_dir.join(".netbook.env"),        // Lowest priority (backward compat)
-            collection_dir.join(".env"),                // Base config
-            collection_dir.join(".env.local"),          // Local overrides (Next.js)
-            collection_dir.join(".netbook").join(".env"), // Highest priority
+            project_root.join(".env"),                  // Base config in project root
+            project_root.join(".env.local"),            // Local overrides (Next.js) in project root
+            project_root.join(".netbook").join(".env"), // Highest priority
         ];
 
         for env_file in &env_files {
