@@ -12,9 +12,14 @@ pub struct ExamplePlugin {
 
 impl ExamplePlugin {
     pub fn new() -> Self {
-        Self {
-            log_file: PathBuf::from("netbook_requests.log"),
-        }
+        // Try to use .netbook directory if it exists, otherwise current directory
+        let log_file = if std::path::Path::new(".netbook").exists() {
+            PathBuf::from(".netbook/requests.log")
+        } else {
+            PathBuf::from("netbook_requests.log")
+        };
+
+        Self { log_file }
     }
 
     pub fn with_log_file(log_file: PathBuf) -> Self {
