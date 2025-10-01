@@ -6,6 +6,7 @@ A lightweight, TUI-first "Postman-like" request collection manager and runner wr
 
 ## Features
 
+- **Easy Sharing** - store `.netbook/` in git for convenient sharing among orgs
 - **Fast TUI Interface** - Built with ratatui for responsive terminal UI
 - **Collection Management** - JSON and YAML support for request collections
 - **Variable Interpolation** - Support for `{{variable}}` syntax with .env files

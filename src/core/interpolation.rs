@@ -25,18 +25,30 @@ impl VariableInterpolator {
             .as_ref()
             .parent()
             .unwrap_or_else(|| Path::new("."));
-        let env_file = collection_dir.join(".netbook.env");
 
-        if env_file.exists() {
-            let content = std::fs::read_to_string(&env_file)?;
-            for line in content.lines() {
-                let line = line.trim();
-                if line.is_empty() || line.starts_with('#') {
-                    continue;
-                }
-                if let Some((key, value)) = line.split_once('=') {
-                    self.env_vars
-                        .insert(key.trim().to_string(), value.trim().to_string());
+        // Load from multiple locations in reverse priority order
+        // (later files override earlier ones)
+        // Priority: .netbook/.env > .env.local > .env > .netbook.env
+        let env_files = [
+            collection_dir.join(".netbook.env"),        // Lowest priority (backward compat)
+            collection_dir.join(".env"),                // Base config
+            collection_dir.join(".env.local"),          // Local overrides (Next.js)
+            collection_dir.join(".netbook").join(".env"), // Highest priority
+        ];
+
+        for env_file in &env_files {
+            if env_file.exists() {
+                let content = std::fs::read_to_string(env_file)?;
+                for line in content.lines() {
+                    let line = line.trim();
+                    if line.is_empty() || line.starts_with('#') {
+                        continue;
+                    }
+                    if let Some((key, value)) = line.split_once('=') {
+                        // Insert/overwrite with values from this file
+                        self.env_vars
+                            .insert(key.trim().to_string(), value.trim().to_string());
+                    }
                 }
             }
         }
@@ -182,7 +194,7 @@ mod tests {
     #[test]
     fn test_load_env_file() {
         let dir = tempdir().unwrap();
-        let env_file = dir.path().join(".netbook.env");
+        let env_file = dir.path().join(".env");
         let collection_file = dir.path().join("collection.json");
 
         std::fs::write(&env_file, "TOKEN=test123\nBASE_URL=https://example.com").unwrap();
@@ -198,6 +210,50 @@ mod tests {
         assert_eq!(
             interpolator.get_variable("BASE_URL"),
             Some("https://example.com".to_string())
+        );
+    }
+
+    #[test]
+    fn test_load_env_file_priority() {
+        let dir = tempdir().unwrap();
+        let netbook_dir = dir.path().join(".netbook");
+        std::fs::create_dir(&netbook_dir).unwrap();
+
+        let netbook_env = netbook_dir.join(".env");
+        let root_env = dir.path().join(".env");
+        let local_env = dir.path().join(".env.local");
+        let collection_file = dir.path().join("collection.json");
+
+        // Create multiple files with overlapping and unique values
+        std::fs::write(&root_env, "TOKEN=from_root\nVAR1=root\nBASE=root").unwrap();
+        std::fs::write(&local_env, "TOKEN=from_local\nVAR2=local").unwrap();
+        std::fs::write(&netbook_env, "TOKEN=from_netbook\nVAR3=netbook").unwrap();
+        std::fs::write(&collection_file, "[]").unwrap();
+
+        let mut interpolator = VariableInterpolator::new();
+        interpolator.load_env_file(&collection_file).unwrap();
+
+        // .netbook/.env should take priority for TOKEN
+        assert_eq!(
+            interpolator.get_variable("TOKEN"),
+            Some("from_netbook".to_string())
+        );
+        // All unique variables should be loaded
+        assert_eq!(
+            interpolator.get_variable("VAR1"),
+            Some("root".to_string())
+        );
+        assert_eq!(
+            interpolator.get_variable("VAR2"),
+            Some("local".to_string())
+        );
+        assert_eq!(
+            interpolator.get_variable("VAR3"),
+            Some("netbook".to_string())
+        );
+        assert_eq!(
+            interpolator.get_variable("BASE"),
+            Some("root".to_string())
         );
     }
 

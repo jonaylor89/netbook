@@ -10,7 +10,7 @@ Netbook automatically discovers your collection files using the following priori
 
 The `.netbook/` directory also stores:
 - `history.json` - Response history
-- `.netbook.env` - Project-specific variables
+- `.env` - Project-specific variables (or use `.env` in project root)
 
 ### Example Structure
 
@@ -18,7 +18,17 @@ The `.netbook/` directory also stores:
 your-project/
 ├── .netbook/
 │   ├── collection.json    # Your API requests
-│   └── .netbook.env       # Variables (API keys, etc.)
+│   └── .env               # Variables (API keys, etc.)
+├── src/
+└── README.md
+```
+
+Alternatively, for simple setups:
+```
+your-project/
+├── .netbook/
+│   └── collection.json
+├── .env                   # Variables in project root
 ├── src/
 └── README.md
 ```

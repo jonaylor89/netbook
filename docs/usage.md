@@ -43,7 +43,7 @@
 
 5. **Manage variables:**
    - Press `v` to view current variables
-   - Variables can be defined in `.netbook.env` files
+   - Variables can be defined in `.netbook/.env` or `.env` files
 
 ## Headless Mode
 
