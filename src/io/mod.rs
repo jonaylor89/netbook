@@ -1,8 +1,10 @@
 pub mod collection;
+pub mod discovery;
 pub mod history;
 pub mod variables;
 
 pub use collection::*;
+pub use discovery::*;
 pub use history::*;
 pub use variables::*;
 

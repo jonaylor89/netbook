@@ -33,11 +33,21 @@ cargo build --release
 ### Basic Usage
 
 ```bash
-# Open TUI with a collection file
+# Initialize a new collection in the current directory
+netbook init
+
+# Open TUI (auto-discovers collection in .netbook/collection.json or netbook.json)
+netbook open
+
+# Open TUI with a specific collection file
 netbook open examples/collection.json
 
+# Edit a request in your $EDITOR (Helix, Neovim, Vim, VSCode, etc.)
+export EDITOR=hx  # or nvim, vim, code --wait, etc.
+netbook edit "Get Users"
+
 # Run a request in headless mode
-netbook headless-run "Get Users" --collection examples/collection.json
+netbook headless-run "Get Users"
 
 # Export last response
 netbook export response.json
@@ -45,7 +55,13 @@ netbook export response.json
 
 ### Demo Walkthrough
 
-1. **Try the example collection:**
+1. **Create a new project collection:**
+   ```bash
+   cd your-project
+   netbook init  # Creates .netbook/collection.json
+   ```
+
+2. **Try the example collection:**
    ```bash
    netbook open examples/collection.json
    ```
@@ -81,6 +97,29 @@ netbook export response.json
 | `Tab` | Switch response tabs |
 | `s` | Save response value to variable |
 | `q`, `Ctrl+C` | Quit |
+
+## Collection Discovery
+
+Netbook automatically discovers your collection files using the following priority:
+
+1. **`.netbook/collection.json`** - Project-specific collection (recommended)
+2. **`netbook.json`** - Simple collection in current directory
+3. **Explicit path** - Use `-c` or `--collection` flag
+
+The `.netbook/` directory also stores:
+- `history.json` - Response history
+- `.netbook.env` - Project-specific variables
+
+### Example Structure
+
+```
+your-project/
+├── .netbook/
+│   ├── collection.json    # Your API requests
+│   └── .netbook.env       # Variables (API keys, etc.)
+├── src/
+└── README.md
+```
 
 ## Collection Format
 

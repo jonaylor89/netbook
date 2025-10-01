@@ -1,4 +1,6 @@
 /target
+.claude/
+.netbook/
 
 netbook_requests.log
 

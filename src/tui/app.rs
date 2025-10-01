@@ -254,12 +254,65 @@ impl TuiApp {
     }
 
     async fn edit_current_request(&mut self) -> Result<()> {
-        // For now, just show a message. Full implementation would:
-        // 1. Open $EDITOR with current request JSON
-        // 2. Wait for editor to close
-        // 3. Reload collection
-        // 4. Refresh UI
-        self.state.status_message = "Edit functionality not yet implemented".to_string();
+        use std::process::Command;
+
+        if let Some(request) = self.state.get_current_request() {
+            let request_name = request.name.clone();
+
+            // Save current terminal state
+            let mut terminal = crate::ui::setup_terminal()?;
+            crate::ui::restore_terminal(&mut terminal)?;
+
+            // Create temporary file with the request
+            let temp_dir = std::env::temp_dir();
+            let temp_file = temp_dir.join(format!("netbook_{}.json", request_name.replace(' ', "_")));
+            let content = serde_json::to_string_pretty(request)?;
+            std::fs::write(&temp_file, &content)?;
+
+            // Get editor from environment
+            let editor = std::env::var("EDITOR")
+                .or_else(|_| std::env::var("VISUAL"))
+                .unwrap_or_else(|_| "vi".to_string());
+
+            // Open editor (blocking)
+            let status = Command::new(&editor)
+                .arg(&temp_file)
+                .status()?;
+
+            if status.success() {
+                // Read back the edited content
+                if let Ok(edited_content) = std::fs::read_to_string(&temp_file) {
+                    if let Ok(edited_request) = serde_json::from_str::<crate::core::Request>(&edited_content) {
+                        // Update the collection
+                        if let Some(req) = self.state.collection.iter_mut().find(|r| r.name == request_name) {
+                            *req = edited_request;
+                        }
+
+                        // Save the updated collection
+                        if let Err(e) = crate::io::save_collection(&self.state.collection, &self.state.collection_path) {
+                            self.state.status_message = format!("Failed to save: {}", e);
+                        } else {
+                            self.state.status_message = format!("✓ Updated request '{}'", request_name);
+                        }
+                    } else {
+                        self.state.status_message = "Error: Invalid JSON in edited file".to_string();
+                    }
+                } else {
+                    self.state.status_message = "Error: Could not read edited file".to_string();
+                }
+            } else {
+                self.state.status_message = "Editor exited with error".to_string();
+            }
+
+            // Clean up temp file
+            let _ = std::fs::remove_file(&temp_file);
+
+            // Restore terminal for TUI
+            let _terminal = crate::ui::setup_terminal()?;
+        } else {
+            self.state.status_message = "No request selected".to_string();
+        }
+
         Ok(())
     }
 }
