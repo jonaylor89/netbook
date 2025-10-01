@@ -1,6 +1,6 @@
 [package]
 name = "netbook"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2024"
 authors = ["Johannes Naylor <jonaylor89@gmail.com>"]
 description = "A lightweight TUI request collection manager and runner - a Postman alternative for the terminal"
