@@ -16,6 +16,12 @@ pub struct EventHandler {
     rx: mpsc::UnboundedReceiver<AppEvent>,
 }
 
+impl Default for EventHandler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EventHandler {
     pub fn new() -> Self {
         let (tx, rx) = mpsc::unbounded_channel();
@@ -23,23 +29,18 @@ impl EventHandler {
         let event_tx = tx.clone();
         tokio::spawn(async move {
             loop {
-                if event::poll(Duration::from_millis(100)).unwrap_or(false) {
-                    if let Ok(event) = event::read() {
-                        if let Event::Key(key_event) = event {
-                            if event_tx.send(AppEvent::Key(key_event)).is_err() {
-                                break;
-                            }
-                        }
-                    }
+                if event::poll(Duration::from_millis(100)).unwrap_or(false)
+                    && let Ok(event) = event::read()
+                    && let Event::Key(key_event) = event
+                    && event_tx.send(AppEvent::Key(key_event)).is_err()
+                {
+                    break;
                 }
                 tokio::time::sleep(Duration::from_millis(50)).await;
             }
         });
 
-        Self {
-            tx,
-            rx,
-        }
+        Self { tx, rx }
     }
 
     pub async fn next(&mut self) -> Option<AppEvent> {

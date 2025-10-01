@@ -1,5 +1,5 @@
 use crate::core::Collection;
-use color_eyre::{eyre::WrapErr, Result};
+use color_eyre::{Result, eyre::WrapErr};
 use std::path::Path;
 
 pub fn load_collection(path: impl AsRef<Path>) -> Result<Collection> {
@@ -8,7 +8,8 @@ pub fn load_collection(path: impl AsRef<Path>) -> Result<Collection> {
         .with_context(|| format!("Failed to read collection file: {}", path.display()))?;
 
     let collection = if path.extension().and_then(|s| s.to_str()) == Some("yaml")
-        || path.extension().and_then(|s| s.to_str()) == Some("yml") {
+        || path.extension().and_then(|s| s.to_str()) == Some("yml")
+    {
         serde_yaml::from_str::<Collection>(&content)
             .with_context(|| format!("Failed to parse YAML collection: {}", path.display()))?
     } else {
@@ -22,7 +23,8 @@ pub fn load_collection(path: impl AsRef<Path>) -> Result<Collection> {
 pub fn save_collection(collection: &Collection, path: impl AsRef<Path>) -> Result<()> {
     let path = path.as_ref();
     let content = if path.extension().and_then(|s| s.to_str()) == Some("yaml")
-        || path.extension().and_then(|s| s.to_str()) == Some("yml") {
+        || path.extension().and_then(|s| s.to_str()) == Some("yml")
+    {
         serde_yaml::to_string(collection)
             .with_context(|| "Failed to serialize collection to YAML")?
     } else {
@@ -81,7 +83,9 @@ mod tests {
             url: "https://example.com".to_string(),
             headers,
             query: HashMap::new(),
-            body: Some(crate::core::RequestBody::Json(serde_json::json!({"test": "value"}))),
+            body: Some(crate::core::RequestBody::Json(
+                serde_json::json!({"test": "value"}),
+            )),
             notes: Some("Test note".to_string()),
         }];
 

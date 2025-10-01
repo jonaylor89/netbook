@@ -1,6 +1,6 @@
 use crate::core::RequestExecutor;
 use crate::tui::{AppEvent, AppMode, AppState, EventHandler};
-use crate::ui::{render_app, setup_terminal, restore_terminal};
+use crate::ui::{render_app, restore_terminal, setup_terminal};
 use color_eyre::Result;
 use crossterm::event::{KeyCode, KeyModifiers};
 use std::path::Path;
@@ -34,7 +34,10 @@ impl TuiApp {
         result
     }
 
-    async fn run_app(&mut self, terminal: &mut ratatui::Terminal<impl ratatui::backend::Backend>) -> Result<()> {
+    async fn run_app(
+        &mut self,
+        terminal: &mut ratatui::Terminal<impl ratatui::backend::Backend>,
+    ) -> Result<()> {
         loop {
             // Render UI
             terminal.draw(|frame| render_app(frame, &self.state))?;
@@ -60,10 +63,10 @@ impl TuiApp {
 
                         // Save to history
                         if let Some(request) = self.state.get_current_request() {
-                            let _ = self.state.save_response_to_history(
-                                request.name.clone(),
-                                response.clone()
-                            ).await;
+                            let _ = self
+                                .state
+                                .save_response_to_history(request.name.clone(), response.clone())
+                                .await;
                         }
 
                         self.state.current_response = Some(response);
@@ -167,7 +170,10 @@ impl TuiApp {
         Ok(false)
     }
 
-    async fn handle_variables_mode_keys(&mut self, key: crossterm::event::KeyEvent) -> Result<bool> {
+    async fn handle_variables_mode_keys(
+        &mut self,
+        key: crossterm::event::KeyEvent,
+    ) -> Result<bool> {
         match key.code {
             KeyCode::Esc | KeyCode::Char('v') => {
                 self.state.mode = AppMode::Normal;
@@ -194,7 +200,12 @@ impl TuiApp {
                 }
             }
             KeyCode::Enter => {
-                if let Some(entry) = self.state.history.entries.get(self.state.history_selected_index) {
+                if let Some(entry) = self
+                    .state
+                    .history
+                    .entries
+                    .get(self.state.history_selected_index)
+                {
                     self.state.current_response = Some(entry.response.clone());
                     self.state.mode = AppMode::Normal;
                 }
@@ -235,7 +246,10 @@ impl TuiApp {
             tokio::spawn(async move {
                 let _ = tx.send(AppEvent::ExecutionStarted);
 
-                match executor.execute_with_interpolator(&request, &interpolator).await {
+                match executor
+                    .execute_with_interpolator(&request, &interpolator)
+                    .await
+                {
                     Ok(response) => {
                         let _ = tx.send(AppEvent::ExecutionCompleted(response));
                     }
@@ -265,7 +279,8 @@ impl TuiApp {
 
             // Create temporary file with the request
             let temp_dir = std::env::temp_dir();
-            let temp_file = temp_dir.join(format!("netbook_{}.json", request_name.replace(' ', "_")));
+            let temp_file =
+                temp_dir.join(format!("netbook_{}.json", request_name.replace(' ', "_")));
             let content = serde_json::to_string_pretty(request)?;
             std::fs::write(&temp_file, &content)?;
 
@@ -275,27 +290,37 @@ impl TuiApp {
                 .unwrap_or_else(|_| "vi".to_string());
 
             // Open editor (blocking)
-            let status = Command::new(&editor)
-                .arg(&temp_file)
-                .status()?;
+            let status = Command::new(&editor).arg(&temp_file).status()?;
 
             if status.success() {
                 // Read back the edited content
                 if let Ok(edited_content) = std::fs::read_to_string(&temp_file) {
-                    if let Ok(edited_request) = serde_json::from_str::<crate::core::Request>(&edited_content) {
+                    if let Ok(edited_request) =
+                        serde_json::from_str::<crate::core::Request>(&edited_content)
+                    {
                         // Update the collection
-                        if let Some(req) = self.state.collection.iter_mut().find(|r| r.name == request_name) {
+                        if let Some(req) = self
+                            .state
+                            .collection
+                            .iter_mut()
+                            .find(|r| r.name == request_name)
+                        {
                             *req = edited_request;
                         }
 
                         // Save the updated collection
-                        if let Err(e) = crate::io::save_collection(&self.state.collection, &self.state.collection_path) {
+                        if let Err(e) = crate::io::save_collection(
+                            &self.state.collection,
+                            &self.state.collection_path,
+                        ) {
                             self.state.status_message = format!("Failed to save: {}", e);
                         } else {
-                            self.state.status_message = format!("✓ Updated request '{}'", request_name);
+                            self.state.status_message =
+                                format!("✓ Updated request '{}'", request_name);
                         }
                     } else {
-                        self.state.status_message = "Error: Invalid JSON in edited file".to_string();
+                        self.state.status_message =
+                            "Error: Invalid JSON in edited file".to_string();
                     }
                 } else {
                     self.state.status_message = "Error: Could not read edited file".to_string();

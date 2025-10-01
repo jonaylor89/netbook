@@ -19,7 +19,10 @@ pub async fn run_headless(name: &str, collection_path: &Path) -> Result<()> {
     let interpolator = crate::io::load_interpolator_with_context(collection_path).await?;
     let executor = RequestExecutor::new();
 
-    match executor.execute_with_interpolator(request, &interpolator).await {
+    match executor
+        .execute_with_interpolator(request, &interpolator)
+        .await
+    {
         Ok(response) => {
             println!("Status: {}", response.status);
             println!("Time: {}ms", response.timing.total_ms);

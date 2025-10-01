@@ -1,7 +1,7 @@
 use crate::core::{Request, Response, ResponseTiming, VariableInterpolator};
 use crate::plugins::PluginManager;
-use color_eyre::{eyre::WrapErr, Result};
 use chrono::Utc;
+use color_eyre::{Result, eyre::WrapErr};
 use reqwest::Client;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
@@ -40,7 +40,8 @@ impl RequestExecutor {
     }
 
     pub async fn execute(&self, request: &Request) -> Result<Response> {
-        self.execute_with_interpolator(request, &VariableInterpolator::new()).await
+        self.execute_with_interpolator(request, &VariableInterpolator::new())
+            .await
     }
 
     pub async fn execute_with_interpolator(
@@ -51,13 +52,17 @@ impl RequestExecutor {
         let interpolated_request = interpolator.interpolate_request(request);
 
         // Plugin hook: before_request
-        self.plugin_manager.before_request(&interpolated_request).await;
+        self.plugin_manager
+            .before_request(&interpolated_request)
+            .await;
 
         let start_time = Instant::now();
 
         // Build the request
-        let mut req_builder = self.client
-            .request(interpolated_request.method.clone().into(), &interpolated_request.url);
+        let mut req_builder = self.client.request(
+            interpolated_request.method.clone().into(),
+            &interpolated_request.url,
+        );
 
         // Add headers
         for (key, value) in &interpolated_request.headers {
@@ -105,8 +110,8 @@ impl RequestExecutor {
             .with_context(|| "Failed to read response body")?;
 
         // Try to parse as JSON, fall back to string
-        let body_json = serde_json::from_str(&body_text)
-            .unwrap_or_else(|_| serde_json::Value::String(body_text));
+        let body_json =
+            serde_json::from_str(&body_text).unwrap_or(serde_json::Value::String(body_text));
 
         let response = Response {
             id: Uuid::new_v4(),
@@ -188,9 +193,13 @@ mod tests {
             method: HttpMethod::Get,
             url: "https://httpbin.org/get".to_string(),
             headers: [("Accept".to_string(), "application/json".to_string())]
-                .iter().cloned().collect(),
+                .iter()
+                .cloned()
+                .collect(),
             query: [("test".to_string(), "value".to_string())]
-                .iter().cloned().collect(),
+                .iter()
+                .cloned()
+                .collect(),
             body: Some(RequestBody::Json(serde_json::json!({"test": "data"}))),
             notes: Some("Test notes".to_string()),
         };

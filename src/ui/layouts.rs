@@ -1,10 +1,10 @@
+use crate::tui::{AppMode, AppState, ResponseTab};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Tabs, Wrap},
 };
-use crate::tui::{AppMode, AppState, ResponseTab};
 
 pub struct MainLayout {
     pub left: Rect,
@@ -59,10 +59,14 @@ pub fn render_request_list(frame: &mut ratatui::Frame, area: Rect, state: &AppSt
             };
 
             ListItem::new(vec![Line::from(vec![
-                Span::styled(format!("{:<7}", request.method), Style::default().fg(method_color)),
+                Span::styled(
+                    format!("{:<7}", request.method),
+                    Style::default().fg(method_color),
+                ),
                 Span::raw(" "),
                 Span::raw(&request.name),
-            ])]).style(style)
+            ])])
+            .style(style)
         })
         .collect();
 
@@ -70,12 +74,18 @@ pub fn render_request_list(frame: &mut ratatui::Frame, area: Rect, state: &AppSt
     list_state.select(Some(state.selected_request_index));
 
     let block_title = if state.filter_text.is_empty() {
-        format!("Requests ({}/{})", filtered_requests.len(), state.collection.len())
+        format!(
+            "Requests ({}/{})",
+            filtered_requests.len(),
+            state.collection.len()
+        )
     } else {
-        format!("Requests ({}/{}) - Filter: '{}'",
-                filtered_requests.len(),
-                state.collection.len(),
-                state.filter_text)
+        format!(
+            "Requests ({}/{}) - Filter: '{}'",
+            filtered_requests.len(),
+            state.collection.len(),
+            state.filter_text
+        )
     };
 
     let list = List::new(items)
@@ -87,7 +97,7 @@ pub fn render_request_list(frame: &mut ratatui::Frame, area: Rect, state: &AppSt
                     Style::default().fg(Color::Yellow)
                 } else {
                     Style::default()
-                })
+                }),
         )
         .highlight_style(Style::default().bg(Color::Blue).fg(Color::White));
 
@@ -112,7 +122,10 @@ pub fn render_request_details(frame: &mut ratatui::Frame, area: Rect, state: &Ap
 
         // Headers
         if !interpolated.headers.is_empty() {
-            content.push(Line::from(Span::styled("Headers:", Style::default().fg(Color::Cyan))));
+            content.push(Line::from(Span::styled(
+                "Headers:",
+                Style::default().fg(Color::Cyan),
+            )));
             for (key, value) in &interpolated.headers {
                 content.push(Line::from(format!("  {}: {}", key, value)));
             }
@@ -121,7 +134,10 @@ pub fn render_request_details(frame: &mut ratatui::Frame, area: Rect, state: &Ap
 
         // Query parameters
         if !interpolated.query.is_empty() {
-            content.push(Line::from(Span::styled("Query:", Style::default().fg(Color::Cyan))));
+            content.push(Line::from(Span::styled(
+                "Query:",
+                Style::default().fg(Color::Cyan),
+            )));
             for (key, value) in &interpolated.query {
                 content.push(Line::from(format!("  {}: {}", key, value)));
             }
@@ -130,9 +146,13 @@ pub fn render_request_details(frame: &mut ratatui::Frame, area: Rect, state: &Ap
 
         // Body
         if let Some(body) = &interpolated.body {
-            content.push(Line::from(Span::styled("Body:", Style::default().fg(Color::Cyan))));
+            content.push(Line::from(Span::styled(
+                "Body:",
+                Style::default().fg(Color::Cyan),
+            )));
             let body_str = body.to_string();
-            for line in body_str.lines().take(10) { // Limit to first 10 lines
+            for line in body_str.lines().take(10) {
+                // Limit to first 10 lines
                 content.push(Line::from(format!("  {}", line)));
             }
             content.push(Line::from(""));
@@ -140,18 +160,28 @@ pub fn render_request_details(frame: &mut ratatui::Frame, area: Rect, state: &Ap
 
         // Notes
         if let Some(notes) = &interpolated.notes {
-            content.push(Line::from(Span::styled("Notes:", Style::default().fg(Color::Cyan))));
+            content.push(Line::from(Span::styled(
+                "Notes:",
+                Style::default().fg(Color::Cyan),
+            )));
             content.push(Line::from(notes.as_str()));
         }
 
         let paragraph = Paragraph::new(content)
-            .block(Block::default().title("Request Details").borders(Borders::ALL))
+            .block(
+                Block::default()
+                    .title("Request Details")
+                    .borders(Borders::ALL),
+            )
             .wrap(Wrap { trim: true });
 
         frame.render_widget(paragraph, area);
     } else {
-        let paragraph = Paragraph::new("No request selected")
-            .block(Block::default().title("Request Details").borders(Borders::ALL));
+        let paragraph = Paragraph::new("No request selected").block(
+            Block::default()
+                .title("Request Details")
+                .borders(Borders::ALL),
+        );
         frame.render_widget(paragraph, area);
     }
 }
@@ -193,22 +223,24 @@ pub fn render_response_pane(frame: &mut ratatui::Frame, area: Rect, state: &AppS
             .style(Style::default().fg(Color::Yellow));
         frame.render_widget(paragraph, chunks[1]);
     } else {
-        let paragraph = Paragraph::new("No response yet")
-            .block(Block::default().borders(Borders::ALL));
+        let paragraph =
+            Paragraph::new("No response yet").block(Block::default().borders(Borders::ALL));
         frame.render_widget(paragraph, chunks[1]);
     }
 }
 
-fn render_pretty_response(frame: &mut ratatui::Frame, area: Rect, response: &crate::core::Response, _state: &AppState) {
+fn render_pretty_response(
+    frame: &mut ratatui::Frame,
+    area: Rect,
+    response: &crate::core::Response,
+    _state: &AppState,
+) {
     let formatted = match serde_json::to_string_pretty(&response.body) {
         Ok(pretty) => pretty,
         Err(_) => response.body.to_string(),
     };
 
-    let lines: Vec<Line> = formatted
-        .lines()
-        .map(|line| Line::from(line))
-        .collect();
+    let lines: Vec<Line> = formatted.lines().map(Line::from).collect();
 
     let paragraph = Paragraph::new(lines)
         .block(Block::default().borders(Borders::ALL))
@@ -227,7 +259,11 @@ fn render_raw_response(frame: &mut ratatui::Frame, area: Rect, response: &crate:
     frame.render_widget(paragraph, area);
 }
 
-fn render_response_headers(frame: &mut ratatui::Frame, area: Rect, response: &crate::core::Response) {
+fn render_response_headers(
+    frame: &mut ratatui::Frame,
+    area: Rect,
+    response: &crate::core::Response,
+) {
     let mut content = vec![
         Line::from(format!("Status: {}", response.status)),
         Line::from(""),
@@ -244,17 +280,23 @@ fn render_response_headers(frame: &mut ratatui::Frame, area: Rect, response: &cr
     frame.render_widget(paragraph, area);
 }
 
-fn render_response_timeline(frame: &mut ratatui::Frame, area: Rect, response: &crate::core::Response) {
+fn render_response_timeline(
+    frame: &mut ratatui::Frame,
+    area: Rect,
+    response: &crate::core::Response,
+) {
     let content = vec![
         Line::from(format!("Total Time: {}ms", response.timing.total_ms)),
-        Line::from(format!("Timestamp: {}", response.timestamp.format("%Y-%m-%d %H:%M:%S UTC"))),
+        Line::from(format!(
+            "Timestamp: {}",
+            response.timestamp.format("%Y-%m-%d %H:%M:%S UTC")
+        )),
         Line::from(""),
         Line::from("Detailed timing information not available"),
         Line::from("(reqwest doesn't expose detailed timing)"),
     ];
 
-    let paragraph = Paragraph::new(content)
-        .block(Block::default().borders(Borders::ALL));
+    let paragraph = Paragraph::new(content).block(Block::default().borders(Borders::ALL));
 
     frame.render_widget(paragraph, area);
 }
@@ -267,7 +309,7 @@ pub fn render_status_bar(frame: &mut ratatui::Frame, area: Rect, state: &AppStat
             } else {
                 "Enter: run | e: edit | v: variables | h: history | /: filter | q: quit"
             }
-        },
+        }
         AppMode::Filter => "Type to filter, Enter: apply, Esc: cancel",
         AppMode::Variables => "Esc: back to main",
         AppMode::History => "↑↓: navigate, Enter: select, Esc: back",
@@ -356,10 +398,11 @@ pub fn render_history_modal(frame: &mut ratatui::Frame, state: &AppState) {
                         Style::default().fg(Color::Green)
                     } else {
                         Style::default().fg(Color::Red)
-                    }
+                    },
                 ),
                 Span::raw(")"),
-            ])]).style(style)
+            ])])
+            .style(style)
         })
         .collect();
 
@@ -367,7 +410,11 @@ pub fn render_history_modal(frame: &mut ratatui::Frame, state: &AppState) {
     list_state.select(Some(state.history_selected_index));
 
     let list = List::new(items)
-        .block(Block::default().title("Response History").borders(Borders::ALL))
+        .block(
+            Block::default()
+                .title("Response History")
+                .borders(Borders::ALL),
+        )
         .style(Style::default().bg(Color::Black))
         .highlight_style(Style::default().bg(Color::Blue).fg(Color::White));
 

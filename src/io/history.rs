@@ -1,6 +1,6 @@
 use crate::core::Response;
-use color_eyre::Result;
 use chrono::{DateTime, Utc};
+use color_eyre::Result;
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -58,11 +58,7 @@ impl ResponseHistory {
     }
 
     pub fn get_recent(&self, count: usize) -> Vec<&HistoryEntry> {
-        self.entries
-            .iter()
-            .rev()
-            .take(count)
-            .collect()
+        self.entries.iter().rev().take(count).collect()
     }
 
     pub fn clear(&mut self) {
@@ -71,8 +67,7 @@ impl ResponseHistory {
 }
 
 pub fn get_history_file_path() -> Option<PathBuf> {
-    ProjectDirs::from("com", "netbook", "netbook")
-        .map(|dirs| dirs.data_dir().join("history.json"))
+    ProjectDirs::from("com", "netbook", "netbook").map(|dirs| dirs.data_dir().join("history.json"))
 }
 
 pub async fn save_history(history: &ResponseHistory) -> Result<()> {
@@ -88,12 +83,12 @@ pub async fn save_history(history: &ResponseHistory) -> Result<()> {
 }
 
 pub async fn load_history() -> Result<ResponseHistory> {
-    if let Some(path) = get_history_file_path() {
-        if path.exists() {
-            let content = tokio::fs::read_to_string(path).await?;
-            let history: ResponseHistory = serde_json::from_str(&content)?;
-            return Ok(history);
-        }
+    if let Some(path) = get_history_file_path()
+        && path.exists()
+    {
+        let content = tokio::fs::read_to_string(path).await?;
+        let history: ResponseHistory = serde_json::from_str(&content)?;
+        return Ok(history);
     }
     Ok(ResponseHistory::default())
 }
@@ -122,7 +117,10 @@ pub async fn export_history_entry(entry_id: Uuid, export_path: &std::path::Path)
         let content = serde_json::to_string_pretty(&export_data)?;
         tokio::fs::write(export_path, content).await?;
     } else {
-        return Err(color_eyre::eyre::eyre!("History entry not found: {}", entry_id));
+        return Err(color_eyre::eyre::eyre!(
+            "History entry not found: {}",
+            entry_id
+        ));
     }
 
     Ok(())
@@ -131,7 +129,7 @@ pub async fn export_history_entry(entry_id: Uuid, export_path: &std::path::Path)
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::{ResponseTiming};
+    use crate::core::ResponseTiming;
     use std::collections::HashMap;
 
     #[test]

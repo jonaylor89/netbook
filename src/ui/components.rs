@@ -15,7 +15,12 @@ impl JsonTreeComponent {
         }
     }
 
-    pub fn render_json_tree(&self, json: &serde_json::Value, path: &str, depth: usize) -> Vec<Line> {
+    pub fn render_json_tree(
+        &self,
+        json: &serde_json::Value,
+        path: &str,
+        depth: usize,
+    ) -> Vec<Line> {
         let mut lines = Vec::new();
         let indent = "  ".repeat(depth);
 
@@ -70,7 +75,10 @@ impl JsonTreeComponent {
 
                         lines.push(Line::from(vec![
                             Span::raw(format!("{}  ", &indent)),
-                            Span::styled(format!("[{}]", index), Style::default().fg(Color::Yellow)),
+                            Span::styled(
+                                format!("[{}]", index),
+                                Style::default().fg(Color::Yellow),
+                            ),
                             Span::raw(": "),
                         ]));
 
@@ -129,12 +137,14 @@ pub fn create_loading_widget(message: &str) -> Paragraph {
     let spinner_index = (std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
-        .as_millis() / 100) % spinner_chars.len() as u128;
+        .as_millis()
+        / 100)
+        % spinner_chars.len() as u128;
 
     let content = vec![Line::from(vec![
         Span::styled(
             spinner_chars[spinner_index as usize].to_string(),
-            Style::default().fg(Color::Yellow)
+            Style::default().fg(Color::Yellow),
         ),
         Span::raw(" "),
         Span::raw(message),

@@ -35,7 +35,8 @@ impl VariableInterpolator {
                     continue;
                 }
                 if let Some((key, value)) = line.split_once('=') {
-                    self.env_vars.insert(key.trim().to_string(), value.trim().to_string());
+                    self.env_vars
+                        .insert(key.trim().to_string(), value.trim().to_string());
                 }
             }
         }
@@ -104,7 +105,11 @@ impl VariableInterpolator {
         interpolated
     }
 
-    pub fn extract_from_response_path(&self, response_body: &serde_json::Value, path: &str) -> Option<String> {
+    pub fn extract_from_response_path(
+        &self,
+        response_body: &serde_json::Value,
+        path: &str,
+    ) -> Option<String> {
         let parts: Vec<&str> = path.split('.').collect();
         let mut current = response_body;
 
@@ -168,7 +173,10 @@ mod tests {
 
         let interpolated = interpolator.interpolate_request(&request);
         assert_eq!(interpolated.url, "https://api.example.com/users");
-        assert_eq!(interpolated.headers.get("Authorization"), Some(&"Bearer secret123".to_string()));
+        assert_eq!(
+            interpolated.headers.get("Authorization"),
+            Some(&"Bearer secret123".to_string())
+        );
     }
 
     #[test]
@@ -183,8 +191,14 @@ mod tests {
         let mut interpolator = VariableInterpolator::new();
         interpolator.load_env_file(&collection_file).unwrap();
 
-        assert_eq!(interpolator.get_variable("TOKEN"), Some("test123".to_string()));
-        assert_eq!(interpolator.get_variable("BASE_URL"), Some("https://example.com".to_string()));
+        assert_eq!(
+            interpolator.get_variable("TOKEN"),
+            Some("test123".to_string())
+        );
+        assert_eq!(
+            interpolator.get_variable("BASE_URL"),
+            Some("https://example.com".to_string())
+        );
     }
 
     #[test]

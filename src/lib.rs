@@ -22,17 +22,15 @@ mod integration_tests {
         let collection_path = dir.path().join("test_collection.json");
 
         // Create test collection
-        let collection = vec![
-            crate::core::Request {
-                name: "Test Request".to_string(),
-                method: crate::core::HttpMethod::Get,
-                url: "https://example.com/api".to_string(),
-                headers: std::collections::HashMap::new(),
-                query: std::collections::HashMap::new(),
-                body: None,
-                notes: Some("Integration test request".to_string()),
-            }
-        ];
+        let collection = vec![crate::core::Request {
+            name: "Test Request".to_string(),
+            method: crate::core::HttpMethod::Get,
+            url: "https://example.com/api".to_string(),
+            headers: std::collections::HashMap::new(),
+            query: std::collections::HashMap::new(),
+            body: None,
+            notes: Some("Integration test request".to_string()),
+        }];
 
         // Save collection
         crate::io::save_collection(&collection, &collection_path).unwrap();
@@ -43,7 +41,9 @@ mod integration_tests {
         assert_eq!(loaded_collection[0].name, "Test Request");
 
         // Test interpolator loading
-        let interpolator = crate::io::load_interpolator_with_context(&collection_path).await.unwrap();
+        let interpolator = crate::io::load_interpolator_with_context(&collection_path)
+            .await
+            .unwrap();
         let interpolated = interpolator.interpolate_request(&loaded_collection[0]);
         assert_eq!(interpolated.name, "Test Request");
     }
@@ -59,17 +59,27 @@ mod integration_tests {
             method: crate::core::HttpMethod::Get,
             url: "{{baseUrl}}/users/{{userId}}".to_string(),
             headers: [("Authorization".to_string(), "Bearer {{token}}".to_string())]
-                .iter().cloned().collect(),
+                .iter()
+                .cloned()
+                .collect(),
             query: [("page".to_string(), "{{page}}".to_string())]
-                .iter().cloned().collect(),
+                .iter()
+                .cloned()
+                .collect(),
             body: None,
             notes: None,
         };
 
         let interpolated = interpolator.interpolate_request(&request);
         assert_eq!(interpolated.url, "https://example.com/users/123");
-        assert_eq!(interpolated.headers.get("Authorization"), Some(&"Bearer {{token}}".to_string()));
-        assert_eq!(interpolated.query.get("page"), Some(&"{{page}}".to_string()));
+        assert_eq!(
+            interpolated.headers.get("Authorization"),
+            Some(&"Bearer {{token}}".to_string())
+        );
+        assert_eq!(
+            interpolated.query.get("page"),
+            Some(&"{{page}}".to_string())
+        );
     }
 
     #[tokio::test]
@@ -100,9 +110,13 @@ mod integration_tests {
             method: crate::core::HttpMethod::Post,
             url: "https://example.com/api".to_string(),
             headers: [("Content-Type".to_string(), "application/json".to_string())]
-                .iter().cloned().collect(),
+                .iter()
+                .cloned()
+                .collect(),
             query: std::collections::HashMap::new(),
-            body: Some(crate::core::RequestBody::Json(serde_json::json!({"test": "data"}))),
+            body: Some(crate::core::RequestBody::Json(
+                serde_json::json!({"test": "data"}),
+            )),
             notes: Some("Test notes".to_string()),
         };
 
@@ -121,17 +135,15 @@ mod integration_tests {
         let json_path = dir.path().join("test.json");
         let yaml_path = dir.path().join("test.yaml");
 
-        let collection = vec![
-            crate::core::Request {
-                name: "Test".to_string(),
-                method: crate::core::HttpMethod::Get,
-                url: "https://example.com".to_string(),
-                headers: std::collections::HashMap::new(),
-                query: std::collections::HashMap::new(),
-                body: None,
-                notes: None,
-            }
-        ];
+        let collection = vec![crate::core::Request {
+            name: "Test".to_string(),
+            method: crate::core::HttpMethod::Get,
+            url: "https://example.com".to_string(),
+            headers: std::collections::HashMap::new(),
+            query: std::collections::HashMap::new(),
+            body: None,
+            notes: None,
+        }];
 
         // Test JSON
         crate::io::save_collection(&collection, &json_path).unwrap();

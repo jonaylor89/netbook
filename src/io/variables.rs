@@ -22,17 +22,19 @@ pub async fn save_variables(variables: &HashMap<String, String>) -> Result<()> {
 }
 
 pub async fn load_variables() -> Result<HashMap<String, String>> {
-    if let Some(path) = get_variables_file_path() {
-        if path.exists() {
-            let content = tokio::fs::read_to_string(path).await?;
-            let variables: HashMap<String, String> = serde_json::from_str(&content)?;
-            return Ok(variables);
-        }
+    if let Some(path) = get_variables_file_path()
+        && path.exists()
+    {
+        let content = tokio::fs::read_to_string(path).await?;
+        let variables: HashMap<String, String> = serde_json::from_str(&content)?;
+        return Ok(variables);
     }
     Ok(HashMap::new())
 }
 
-pub async fn load_interpolator_with_context(collection_path: impl AsRef<std::path::Path>) -> Result<VariableInterpolator> {
+pub async fn load_interpolator_with_context(
+    collection_path: impl AsRef<std::path::Path>,
+) -> Result<VariableInterpolator> {
     let mut interpolator = VariableInterpolator::new();
 
     // Load from .netbook.env file

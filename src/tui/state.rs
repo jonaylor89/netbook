@@ -37,19 +37,10 @@ pub struct AppState {
     pub json_tree_state: JsonTreeState,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct JsonTreeState {
     pub expanded_paths: std::collections::HashSet<String>,
     pub selected_path: Option<String>,
-}
-
-impl Default for JsonTreeState {
-    fn default() -> Self {
-        Self {
-            expanded_paths: std::collections::HashSet::new(),
-            selected_path: None,
-        }
-    }
 }
 
 impl AppState {
@@ -105,7 +96,12 @@ impl AppState {
             for (i, request) in self.collection.iter().enumerate() {
                 if request.name.to_lowercase().contains(&filter_lower)
                     || request.url.to_lowercase().contains(&filter_lower)
-                    || request.method.to_string().to_lowercase().contains(&filter_lower) {
+                    || request
+                        .method
+                        .to_string()
+                        .to_lowercase()
+                        .contains(&filter_lower)
+                {
                     self.filtered_indices.push(i);
                 }
             }
@@ -145,7 +141,11 @@ impl AppState {
         };
     }
 
-    pub async fn save_response_to_history(&mut self, request_name: String, response: Response) -> color_eyre::Result<()> {
+    pub async fn save_response_to_history(
+        &mut self,
+        request_name: String,
+        response: Response,
+    ) -> color_eyre::Result<()> {
         self.history.add_entry(request_name, response);
         save_history(&self.history).await?;
         Ok(())
@@ -191,7 +191,7 @@ impl AppState {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::{HttpMethod};
+    use crate::core::HttpMethod;
     use std::collections::HashMap;
 
     fn create_test_requests() -> Collection {

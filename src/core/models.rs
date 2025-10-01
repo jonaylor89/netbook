@@ -85,25 +85,13 @@ pub struct Response {
     pub timestamp: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ResponseTiming {
     pub total_ms: u64,
     pub dns_lookup_ms: Option<u64>,
     pub tcp_connect_ms: Option<u64>,
     pub tls_handshake_ms: Option<u64>,
     pub request_ms: Option<u64>,
-}
-
-impl Default for ResponseTiming {
-    fn default() -> Self {
-        Self {
-            total_ms: 0,
-            dns_lookup_ms: None,
-            tcp_connect_ms: None,
-            tls_handshake_ms: None,
-            request_ms: None,
-        }
-    }
 }
 
 pub type Collection = Vec<Request>;
