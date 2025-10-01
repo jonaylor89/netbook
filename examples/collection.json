@@ -1,0 +1,88 @@
+[
+  {
+    "name": "Get Users",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "notes": "Example GET of sample API"
+  },
+  {
+    "name": "Create Post",
+    "method": "POST",
+    "url": "https://jsonplaceholder.typicode.com/posts",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer {{token}}"
+    },
+    "body": {
+      "title": "Hello",
+      "body": "world",
+      "userId": 1
+    },
+    "notes": "Saves response.id as {{postId}} using 's' in response pane"
+  },
+  {
+    "name": "Get Single User",
+    "method": "GET",
+    "url": "{{baseUrl}}/users/{{userId}}",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "query": {
+      "details": "full"
+    },
+    "notes": "Demonstrates variable interpolation in URL and query params"
+  },
+  {
+    "name": "Update Post",
+    "method": "PUT",
+    "url": "https://jsonplaceholder.typicode.com/posts/{{postId}}",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "id": "{{postId}}",
+      "title": "Updated Title",
+      "body": "Updated content",
+      "userId": 1
+    },
+    "notes": "Updates a post using ID from previous request"
+  },
+  {
+    "name": "Delete Post",
+    "method": "DELETE",
+    "url": "https://jsonplaceholder.typicode.com/posts/1",
+    "headers": {
+      "Authorization": "Bearer {{token}}"
+    },
+    "notes": "Deletes a post"
+  },
+  {
+    "name": "Get Comments",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/comments",
+    "query": {
+      "postId": "1",
+      "limit": "5"
+    },
+    "notes": "Get comments for a specific post"
+  },
+  {
+    "name": "Search Posts",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/posts",
+    "query": {
+      "userId": "{{searchUserId}}",
+      "_limit": "10"
+    },
+    "notes": "Search posts by user ID with limit"
+  },
+  {
+    "name": "Health Check",
+    "method": "HEAD",
+    "url": "https://jsonplaceholder.typicode.com/posts/1",
+    "notes": "Check if the API is responding"
+  }
+]
