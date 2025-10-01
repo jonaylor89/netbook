@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5](https://github.com/jonaylor89/netbook/compare/v0.2.4...v0.2.5) - 2025-10-01
+
+### Other
+
+- add funding.yml
+
 ## [0.2.4](https://github.com/jonaylor89/netbook/compare/v0.2.3...v0.2.4) - 2025-10-01
 
 ### Other
