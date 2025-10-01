@@ -13,7 +13,7 @@ keywords = ["tui", "http", "rest", "api", "testing"]
 categories = ["command-line-utilities", "development-tools", "network-programming"]
 exclude = [
     "netbook_requests.log",
-    ".netbook.env",
+    ".netbook/",
 ]
 
 [dependencies]
